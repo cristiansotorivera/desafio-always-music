@@ -1,76 +1,23 @@
-import 'dotenv/config'
-import express from 'express'
-import { Estudiante } from './models/estudiante.model.js'
-const app = express()
+import 'dotenv/config';
+import express from 'express';
+import estudiantesRoutes from './routes/estudiantes.route.js';
 
-// habilitar el req.body
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+const app = express();
 
-app.get('/estudiantes', async (req, res) => {
-    try {
-        const estudiantes = await Estudiante.findAll()
-        return res.json(estudiantes)
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: false })
-    }
-})
+// Enable parsing of JSON and URL-encoded data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/estudiantes/:id', async (req, res) => {
-    try {
-        const { id } = req.params
-        const estudiante = await Estudiante.findOneByRut(id)
-        return res.json(estudiante)
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: false })
-    }
-})
+// Routes for /estudiantes
+app.use('/estudiantes', estudiantesRoutes);
 
-
-app.delete('/estudiantes/:id', async (req, res) => {
-    try {
-        const { id } = req.params
-        const estudiante = await Estudiante.remove(id)
-        return res.json(estudiante)
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: false })
-    }
+// Basic error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Internal Server Error' });
 });
 
-app.post('/estudiantes', async (req, res) => {
-    try {
-        const { nombre, rut, curso, nivel } = req.body
-        const newEstudiante = await Estudiante.create({ nombre, curso, nivel, rut })
-        return res.json(newEstudiante)
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: false })
-    }
-})
-
-app.put('/estudiantes/:id', async (req, res) => {
-    try {
-        const { id } = req.params
-        const { nombre, rut, curso, nivel } = req.body
-        const estudianteUpdate = {
-            id, 
-            nombre,
-            rut, 
-            curso, 
-            nivel  
-        }
-        const estudiante = await Estudiante.update(estudianteUpdate)
-        return res.json(estudiante)
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: false })
-    }
-})
-
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Example app listening on PORT ${PORT}`)
-})
+    console.log(`Example app listening on PORT ${PORT}`);
+});
